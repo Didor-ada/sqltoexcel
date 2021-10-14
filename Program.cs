@@ -15,30 +15,25 @@ namespace sqltoexcel
 
         public static void Main(string[] args)
         {
-
-
-            var connectionString = "Data Source=localhost;Initial Catalog=Parametres;User Id=DevCaiman;pwd=Dev!Caiman";
-            var requete = "select * from Clients";
-            var donnees = RenvoyerDataTableDepuisRequeteSQL(requete, connectionString);
+            var connectionString = "Data Source=localhost;Initial Catalog=Parametres;User Id=DevCaiman;pwd=Dev!Caiman"; // connexion à la BDD
+            var requete = "select * from Clients"; // selection de la bonne requête
+            var donnees = RenvoyerDataTableDepuisRequeteSQL(requete, connectionString); // 
             var fichierExcel = GenererFichierExcelDepuisDonnees(donnees);
-            var temp = System.IO.Path.GetTempFileName();
-           temp =  Path.ChangeExtension(temp, ".xlsx");
+
+            var temp = System.IO.Path.GetTempFileName(); // le fichier excel sera un fichier temporaire
+            temp =  Path.ChangeExtension(temp, ".xlsx");
             System.IO.File.WriteAllBytes(temp, fichierExcel);
             Process.Start(temp);
-            //Ouverture du fichier excel
-            //AfficherExcel(fichierExcel);
 
 
-
-
-            string[] filePaths = Directory.GetFiles(@"E:\Traitement\", "*.sql");
+            string[] filePaths = Directory.GetFiles(@"E:\Traitement\", "*.sql"); // on va chercher les fichiers 'Requêtes.sql", chemin puis extension
             foreach (string filePath in filePaths)
             {
-                if (File.Exists(filePath))
+                if (File.Exists(filePath)) // existence du fichier
                 {
                     AfficherListe(filePath);
                 }
-                else if (Directory.Exists(filePath))
+                else if (Directory.Exists(filePath)) // existence du chemin
                 {
                     CheminDesFichiers(filePath);
                 }
@@ -52,11 +47,16 @@ namespace sqltoexcel
 
         public static void CheminDesFichiers(string filePaths)
         {
-            string[] subdirectoryEntries = Directory.GetDirectories(filePaths);
-            foreach (string subdirectory in subdirectoryEntries)
-                CheminDesFichiers(subdirectory);
+            string[] entreeDuSousDossier = Directory.GetDirectories(filePaths);
+            foreach (string sousDossier in entreeDuSousDossier)
+                CheminDesFichiers(sousDossier);
         }
 
+        public List<Fichier> RenvoyerListeFichier(string CheminDossier)
+        {
+            return System.IO.Directory.GetFiles(CheminDossier, "*.sql").Select(f => new Fichier(f)).ToList(); // Input/Output, Chemin des fichiers, get fichiers, + extension
+            // Directory : expose des méthodes statiques pour créer, déplacer, énumérer à travers des dossiers et des sous-dossiers
+        }
 
         public static void AfficherListe(string filePath)
         {
@@ -65,83 +65,34 @@ namespace sqltoexcel
         }
 
 
-        public List<Fichier> RenvoyerListeFichier(string CheminDossier)
-        {
-            return System.IO.Directory.GetFiles(CheminDossier, "*.sql").Select(f => new Fichier(f)).ToList();
-        }
-
-
-        private static DataTable RenvoyerDataTableDepuisRequeteSQL(string requete, string connectionString)
+        private static DataTable RenvoyerDataTableDepuisRequeteSQL(string requete, string connectionString) // Table de données = réulstat des requêtes SQL
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(requete, connection);
-                command.Connection.Open();
+                command.Connection.Open(); // Ouvre la connexion avec la database
 
-                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                SqlDataAdapter adapter = new SqlDataAdapter(command); // SqlDataAdapter représente un de commandes data et une connexion à la db qui sont utilités pour remplir la DataTable et update la BDD SQL
 
                 DataTable datatable = new DataTable();
-                adapter.Fill(datatable);
-                command.Connection.Close();
+                adapter.Fill(datatable); // ici on remplit la datatable
+                command.Connection.Close(); // ferme la connexion avec la database
                 return datatable;
             }
         }
 
-        private static Byte[] GenererFichierExcelDepuisDonnees(DataTable tableDonnees)
+        private static Byte[] GenererFichierExcelDepuisDonnees(DataTable tableDonnees) // on génère un fichier, il faut un tableau de Bytes.
         {
-            //ExportDataToExcel_SSG.ExportDataTableToExcel(tableDonnees, @"E:\TraitementSQLAExcel.xls");
-            //  ClosedXML.Excel.XLWorkbook wbook = new ClosedXML.Excel.XLWorkbook();
-            using (var fluxEcriture = new MemoryStream())
+            using (var fluxEcriture = new MemoryStream()) // on alloue un flux de mémoire
             {
-                ClosedXML.Excel.XLWorkbook wbook = new ClosedXML.Excel.XLWorkbook();
-                wbook.Worksheets.Add(tableDonnees, "Données");
+                ClosedXML.Excel.XLWorkbook wbook = new ClosedXML.Excel.XLWorkbook(); // module ClosedXML pour créer le classeur Excel
+                wbook.Worksheets.Add(tableDonnees, "Données"); // suite du module pour ajouter un sheet "Donneés" dans le classeur
                 wbook.SaveAs(fluxEcriture);
-                return fluxEcriture.ToArray();
+                return fluxEcriture.ToArray(); // on retourne le résultat dans le tableau
             }
-
-
-            //Byte[]
-
-            //return ficherExcel;
-            return null;
-
-
         }
     }
 }
-
-
-/*
-            DataTable dt = new DataTable();
-            ExportDataToExcel_SSG.ExportDataTableToExcel(dt, @"d:\Filename.xls");
-            DataTable[] dd = new DataTable[10];
-
-            ExportDataToExcel_SSG.MultiDataTableAs_MultiExcelFile(dd, @"d:\File.xls");
-            DataSet ds = new DataSet();
-            ExportDataToExcel_SSG.MergingMultiDataSetAs_singleExcelSheet(ds, @"d:\File.xls", false);*/
-
-
-/*            //Récupération de la liste des fichiers
-                    var listeFichier = RenvoyerListeFichier("");
-                    //Récupération du fichier
-
-                    var fichierSelection = listeFichier.First();
-                    //Récupération des données
-
-                    var tableDonnees = RenvoyerDonneesDepuisBaseDeDonnees(fichierSelection);
-                    //Generation du fichier excel
-
-                    var fichierExcel = genererFichierExceldpuisDonnees(tableDonnees);
-                    //Ouverture du fichier excel
-                    AfficherExcel(fichierExcel);*/
-
-
-/*        public IEnumerable<Ficher> RenvoyerListeFichier(string cheminDossier)
-        {
-
-        }
-*/
-
 
 
 public class Fichier
@@ -160,4 +111,18 @@ public class Fichier
         ContenuFichier = System.IO.File.ReadAllText(CheminFichier);
     }
 }
+
+/*            //Récupération de la liste des fichiers
+                    var listeFichier = RenvoyerListeFichier("");
+                    //Récupération du fichier
+
+                    var fichierSelection = listeFichier.First();
+                    //Récupération des données
+
+                    var tableDonnees = RenvoyerDonneesDepuisBaseDeDonnees(fichierSelection);
+                    //Generation du fichier excel
+
+                    var fichierExcel = genererFichierExceldpuisDonnees(tableDonnees);
+                    //Ouverture du fichier excel
+                    AfficherExcel(fichierExcel);*/
 
