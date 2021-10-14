@@ -21,8 +21,8 @@ namespace sqltoexcel
             var fichierExcel = GenererFichierExcelDepuisDonnees(donnees);
 
             var temp = System.IO.Path.GetTempFileName(); // le fichier excel sera un fichier temporaire
-            temp =  Path.ChangeExtension(temp, ".xlsx");
-            System.IO.File.WriteAllBytes(temp, fichierExcel);
+            temp =  Path.ChangeExtension(temp, ".xlsx"); // changement de l'extension
+            System.IO.File.WriteAllBytes(temp, fichierExcel); // créer le nouveau fichier, byte array écrit dans le file, puis ferme le fichier. Si le fichier cible existe déjà, il est écrasé
             Process.Start(temp);
 
 
@@ -95,24 +95,24 @@ namespace sqltoexcel
 }
 
 
-public class Fichier
-{
-    public Fichier()
+    public class Fichier
     {
-        NomFichier = string.Empty;
-        ContenuFichier = string.Empty;
-    }
-    public string NomFichier { get; set; }
-    public string ContenuFichier { get; set; }
+        public Fichier()
+        {
+            NomFichier = string.Empty;
+            ContenuFichier = string.Empty;
+        }
+        public string NomFichier { get; set; }
+        public string ContenuFichier { get; set; }
 
-    public Fichier(string CheminFichier) : this()
-    {
-        NomFichier = System.IO.Path.GetFileName(CheminFichier);
-        ContenuFichier = System.IO.File.ReadAllText(CheminFichier);
+        public Fichier(string CheminFichier) : this()
+        {
+            NomFichier = System.IO.Path.GetFileName(CheminFichier);
+            ContenuFichier = System.IO.File.ReadAllText(CheminFichier);
+        }
     }
-}
 
-/*            //Récupération de la liste des fichiers
+                    /*Récupération de la liste des fichiers
                     var listeFichier = RenvoyerListeFichier("");
                     //Récupération du fichier
 
